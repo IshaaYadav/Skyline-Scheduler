@@ -1,0 +1,20 @@
+#Data & Scientific Computing
+pandas
+numpy
+scikit-learn
+
+#Web Application & UI
+streamlit
+
+#NLP & Embeddings
+sentence-transformers
+faiss-cpu
+
+#Visualization
+plotly
+matplotlib
+seaborn
+
+#Configuration & Validation
+pyyaml
+pydantic
