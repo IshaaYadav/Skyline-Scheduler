@@ -119,16 +119,29 @@ elif page == "Delay Prediction":
     st.markdown("Tune the schedule for a flight and see the predicted impact on its departure delay.")
 
     if model is not None and processed_df is not None:
+        # Create a mapping from full airport name to airport code for the dropdown
+        airport_map_df = processed_df[['to_full', 'to_airport']].drop_duplicates().dropna()
+        airport_map_df = airport_map_df.sort_values('to_full')
+        
+        # Create a dictionary for easy lookup: { 'Chennai (MAA)': 'MAA', ... }
+        airport_name_to_code_map = pd.Series(airport_map_df.to_airport.values, index=airport_map_df.to_full).to_dict()
+
         col1, col2, col3 = st.columns(3)
         with col1:
             hour = st.slider("Scheduled Hour (24H)", 0, 23, 10)
         with col2:
-            day = st.selectbox("Day of the Week", processed_df['day_of_week'].unique())
+            day = st.selectbox("Day of the Week", processed_df['day_of_week'].dropna().unique())
         with col3:
-            airport = st.selectbox("Destination Airport", processed_df['to_airport'].unique())
+            # Use the full names for the dropdown options
+            selected_airport_name = st.selectbox("Destination Airport", options=airport_name_to_code_map.keys())
 
         if st.button("Predict Delay"):
-            predicted_delay = predict_delay(model, encoder, model_cols, hour, day, airport)
+            # Get the corresponding airport code from the selected name
+            airport_code = airport_name_to_code_map[selected_airport_name]
+            
+            # Use the code for prediction
+            predicted_delay = predict_delay(model, encoder, model_cols, hour, day, airport_code)
+            
             st.metric(label="Predicted Departure Delay", value=f"{predicted_delay:.2f} minutes")
             if predicted_delay > 20:
                 st.warning("High delay predicted. Consider rescheduling.")
